@@ -4,6 +4,8 @@
 - **Lớp:** CNTT05
 - **Đề tài:** Luồng L2 - Tiếp nhận và phân loại yêu cầu bảo hành (Smart CRM – Mekong Mobile)
 
+---
+
 ## Danh sách các điểm điều chỉnh (TD-01 đến TD-03)
 
 ### TD-01: Bổ sung ràng buộc trạng thái phiếu (Ticket Status)
