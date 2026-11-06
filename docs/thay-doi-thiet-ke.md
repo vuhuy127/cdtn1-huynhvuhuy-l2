@@ -25,3 +25,17 @@
 - **Quyết định:** GIỮ. Giữ nguyên ranh giới tính năng (WON'T scope).
 - **Lý do:** Tập trung hoàn toàn vào việc tiếp nhận, phân loại và tính SLA cho phiếu bảo hành trong Sprint này.
 - **Ảnh hưởng:** Không có thay đổi về code, giữ nguyên cấu trúc phân rã chức năng.
+
+# Giải trình phản hồi Bài tập 2 & Quyết định xử lý kỹ thuật
+
+## 1. Bảng giải trình phản hồi từ Giảng viên
+
+| Nội dung nhận xét / Hạn chế BT2 | Quyết định xử lý kỹ thuật | Trạng thái |
+| :--- | :--- | :--- |
+| **1. Mã nguồn ít, mới có 3 endpoint, chưa đủ CRUD (S1)** | Quy hoạch rõ phạm vi prototype L2 tập trung vào các quy tắc nghiệp vụ cốt lõi (tạo phiếu, validation, kiểm tra bảo hành). Các endpoint bổ trợ khác sẽ được đưa vào phạm vi giới hạn của bài tập. | Đã ghi nhận |
+| **2. Chưa có migration và seed dữ liệu (S3)** | Tạo thư mục `seeds/` chứa các câu lệnh/dữ liệu mẫu để phục vụ khởi tạo cơ sở dữ liệu sạch khi chạy test tự động. | Đã khắc phục |
+| **3. Chưa có giao diện 3 màn hình và 3 trạng thái (S4)** | Ghi rõ trong tài liệu: Hệ thống tập trung hoàn thiện API Backend (FastAPI) chuẩn RESTful và kiểm thử qua Swagger UI / Pytest. Phần UI sẽ hoàn thiện ở mốc sau. | Đã ghi nhận |
+| **4. Tệp requirements.txt chưa khóa phiên bản (C6)** | Cập nhật tệp `requirements.txt`, cố định phiên bản cho toàn bộ thư viện bằng dấu `==` (vd: `fastapi==0.110.0`, `pytest==8.0.0`). | Đã khắc phục |
+| **5. Thiếu docs/ai-disclosure.md, README ngắn** | Bổ sung tệp `docs/ai-disclosure.md` (khai báo sử dụng AI) và viết lại tệp `README.md` với đầy đủ hướng dẫn thiết lập môi trường, chạy test. | Đã khắc phục |
+
+---
