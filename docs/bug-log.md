@@ -1,5 +1,4 @@
-# TP3 — Bug Log
-
+# BT3 - Bug Log
 The three issues below were identified during the repository audit and corrected in the BT3 implementation.
 
 ## BUG-01 — MAJOR — Ticket data was volatile

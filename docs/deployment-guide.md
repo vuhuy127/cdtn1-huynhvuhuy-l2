@@ -85,4 +85,4 @@ Do not treat the current HTTP localhost endpoint as a production deployment. Aut
 
 ## Clean-machine acceptance test
 
-The GitHub-hosted Docker smoke test for workflow run 43426101102 built the Compose image on a clean Ubuntu runner, verified Docker health status healthy, checked API endpoints, reseeded twice without duplicate rows, created a ticket and confirmed it remained available after restarting the app. The student must still perform the prescribed clone-by-tag test on a separate Windows machine and capture local screenshots for the PDF evidence before submission.
+The GitHub-hosted Docker smoke test for workflow run 43448579437 built the Compose image on a clean Ubuntu runner, verified Docker health status healthy, checked API endpoints, reseeded twice without duplicate rows, created a ticket and confirmed it remained available after restarting the app. The student must still perform the prescribed clone-by-tag test on a separate Windows machine and capture local screenshots for the PDF evidence before submission.

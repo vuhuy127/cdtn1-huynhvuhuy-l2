@@ -1,14 +1,20 @@
-# TP2 — Test Report
+# BT3 - Test Report
 
 ## 1. Local automated test execution
 
-**Command:** python -m pytest -q
-**Environment:** Python 3.13.5, FastAPI 0.128.2, Pydantic 2.13.5, Pytest 9.0.2, HTTPX 0.28.1.
-**Result:** 12/12 PASS (100%) in 0.33 seconds in the local build workspace.
+**Command:** python -m pytest -v
+
+**Platform:** Windows (win32).
+
+**Environment:** Python 3.12.10, Pytest 9.0.2, Pluggy 1.7.0, AnyIO 4.16.0.
+
+**Result:** 12/12 PASS (100%) in 2.29 seconds.
+
+**Warning:** One DeprecationWarning from Starlette TestClient concerning the deprecated anyio.abc.BlockingPortal alias. No test failed.
 
 ## 2. GitHub Actions execution
 
-**Workflow run:** https://github.com/vuhuy127/cdtn1-huynhvuhuy-l2/actions/runs/43426101102
+**Verified successful workflow:** https://github.com/vuhuy127/cdtn1-huynhvuhuy-l2/actions/runs/43448579437
 
 | Job | Result | Verification |
 |---|---|---|
@@ -16,7 +22,7 @@
 | test (3.13) | PASS | Dependency install, compileall, 12 Pytest cases |
 | docker-smoke | PASS | Docker build, healthcheck healthy, API smoke checks, seed idempotency, ticket persistence after restart |
 
-The Docker smoke job ran on a fresh GitHub-hosted Ubuntu runner. It is not a screenshot of the student's own Windows machine.
+All three jobs completed successfully on GitHub-hosted runners.
 
 ## 3. Test cases
 
@@ -37,8 +43,12 @@ The Docker smoke job ran on a fresh GitHub-hosted Ubuntu runner. It is not a scr
 
 ## 4. Docker smoke test result
 
-On the GitHub-hosted runner, Docker Compose built and started the app. The workflow asserted Docker health status healthy, called GET /, GET /health, GET /api/tickets/ and GET /api/tickets/TK-DEMO-001, seeded demo data twice and verified that the ticket count stayed at 2, created a ticket, updated a status, restarted the app and retrieved the created ticket again. All steps passed.
+On the GitHub-hosted runner, Docker Compose built and started the app. The workflow asserted Docker health status healthy, called GET /, GET /health, GET /api/tickets/ and GET /api/tickets/TK-DEMO-001, seeded demo data twice and verified that the ticket count stayed at 2, created a ticket, updated a status, restarted the app and retrieved the created ticket again.
+
+All steps passed.
 
 ## 5. Remaining local evidence
 
-The code and Docker workflow are verified in GitHub CI. The student's separate Windows clean-folder clone of the final public tag and genuine local screenshots for the PDF are still required. Do not present CI logs as screenshots from the student's personal machine.
+The code and Docker workflow are verified in GitHub CI. The student's separate Windows clean-folder clone of the final public tag and genuine local screenshots for the PDF are still required.
+
+Do not present CI logs as screenshots from the student's personal machine.
