@@ -1,8 +1,8 @@
-name: Python CI
+name: Python and Docker CI
 
 on:
   push:
-    branches: [main, "fix/**"]
+    branches: [main, "fix/**", "ci/**"]
   pull_request:
     branches: [main]
 
@@ -30,3 +30,91 @@ jobs:
         env:
           PYTHONPATH: .
         run: python -m pytest -q
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build and start Docker Compose service
+        run: docker compose up -d --build
+      - name: Wait for Docker healthcheck to become healthy
+        shell: bash
+        run: |
+          for attempt in $(seq 1 30); do
+            health_status="$(docker inspect --format '{{.State.Health.Status}}' mekong-crm-l2 2>/dev/null || true)"
+            if [ "${health_status}" = "healthy" ]; then
+              break
+            fi
+            sleep 2
+          done
+          docker compose ps
+          health_status="$(docker inspect --format '{{.State.Health.Status}}' mekong-crm-l2)"
+          echo "Docker health status: ${health_status}"
+          test "${health_status}" = "healthy"
+          curl -fsS http://localhost:8000/health
+      - name: Verify API endpoints and record actual examples
+        shell: bash
+        run: |
+          echo '--- REAL RESPONSE: GET / ---'
+          curl -fsS http://localhost:8000/
+          echo
+          echo '--- REAL RESPONSE: GET /health ---'
+          curl -fsS http://localhost:8000/health
+          echo
+          echo '--- REAL RESPONSE: GET /api/tickets/ ---'
+          curl -fsS http://localhost:8000/api/tickets/
+          echo
+          echo '--- REAL RESPONSE: GET /api/tickets/TK-DEMO-001 ---'
+          curl -fsS http://localhost:8000/api/tickets/TK-DEMO-001
+          echo
+      - name: Verify idempotent seed
+        shell: bash
+        run: |
+          docker compose exec -T app python -m src.seed
+          docker compose exec -T app python -m src.seed
+          ticket_count="$(curl -fsS http://localhost:8000/api/tickets/ | python -c "import json,sys; print(json.load(sys.stdin)['total'])")"
+          echo "Ticket count after reseeding twice: ${ticket_count}"
+          test "${ticket_count}" = "2"
+      - name: Verify create and status-update endpoints
+        shell: bash
+        run: |
+          http_status="$(curl -sS -o /tmp/ticket.json -w '%{http_code}' -X POST http://localhost:8000/api/tickets/ \
+            -H 'Content-Type: application/json' \
+            -d '{"customer_phone":"0901234567","imei":"123456789012345","issue_category":"MAN_HINH","description":"CI documentation example ticket","priority":"HIGH"}')"
+          test "${http_status}" = "201"
+          ticket_id="$(python -c "import json; print(json.load(open('/tmp/ticket.json'))['data']['ticket_id'])")"
+          echo "--- REAL REQUEST: POST /api/tickets/ ---"
+          cat /tmp/ticket.json
+          echo
+          echo "--- REAL REQUEST: GET /api/tickets/${ticket_id} ---"
+          curl -fsS "http://localhost:8000/api/tickets/${ticket_id}"
+          echo
+          echo '--- REAL REQUEST: PATCH /api/tickets/TK-DEMO-001/status ---'
+          curl -fsS -X PATCH http://localhost:8000/api/tickets/TK-DEMO-001/status \
+            -H 'Content-Type: application/json' -d '{"status":"HOÀN TẤT"}'
+          echo
+      - name: Verify ticket persistence after restart
+        shell: bash
+        run: |
+          ticket_id="$(python -c "import json; print(json.load(open('/tmp/ticket.json'))['data']['ticket_id'])")"
+          docker compose restart app
+          for attempt in $(seq 1 30); do
+            health_status="$(docker inspect --format '{{.State.Health.Status}}' mekong-crm-l2 2>/dev/null || true)"
+            if [ "${health_status}" = "healthy" ]; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS "http://localhost:8000/api/tickets/${ticket_id}"
+          echo
+          health_status="$(docker inspect --format '{{.State.Health.Status}}' mekong-crm-l2)"
+          echo "Docker health status after restart: ${health_status}"
+          test "${health_status}" = "healthy"
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs app
+      - name: Stop stack and remove CI volume
+        if: always()
+        run: docker compose down -v
