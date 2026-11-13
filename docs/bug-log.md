@@ -1,32 +1,33 @@
-# Bug Log - Nhật ký Gỡ lỗi Dự án
+# TP3 — Bug Log
 
-## BUG-01 · Major · Lỗi thiếu khóa cứng phiên bản thư viện trong requirements.txt
-1. **Mã và mức độ:** BUG-01 · MAJOR · Ảnh hưởng đến tính tái lập môi trường (Tiêu chí C6).
-2. **Phát hiện bởi:** Nhận xét phản hồi Bài tập 2 của Giảng viên.
-3. **Triệu chứng:** Tệp `requirements.txt` sử dụng tên thư viện tự do không ghi kèm phiên bản cố định (`==`), dẫn đến nguy cơ xung đột khi dựng lại trên máy khác.
-4. **Cách tái lập:** Clone repo trên môi trường máy sạch và chạy `pip install -r requirements.txt`.
-5. **Nguyên nhân:** Khởi tạo file requirements tự động bằng `pip freeze` nhưng thiếu tham số chốt phiên bản cụ thể.
-6. **Cách sửa:** Khóa cố định phiên bản các thư viện chính (FastAPI, Pytest, Uvicorn, Pydantic) trong tệp `requirements.txt`.
-7. **Commit và xác nhận:** https://github.com/vuhuy127/cdtn1-huynhvuhuy-l2/commit/38c625d2d65a0a8061ee519dee047818c5d4f3c9 — Đã kiểm tra lại tính tương thích: PASS.
+The three issues below were identified during the repository audit and corrected in the BT3 implementation. The fix commit URL is added after the GitHub commit is created.
 
----
+## BUG-01 — MAJOR — Ticket data was volatile
 
-## BUG-02 · Critical · Lỗi trả về mã lỗi 500 khi tra cứu ID phiếu không tồn tại (OWASP A02)
-1. **Mã và mức độ:** BUG-02 · CRITICAL · Lỗi hệ thống để lộ vết ngăn xếp/lỗi kỹ thuật (500 Internal Server Error).
-2. **Phát hiện bởi:** TC-07 (Kiểm thử tra cứu ID không tồn tại).
-3. **Triệu chứng:** Gọi `GET /api/tickets/9999` trả về mã HTTP 500 thay vì mã 404.
-4. **Cách tái lập:** Gửi request GET tới endpoint phiếu bảo hành với một ID ngẫu nhiên không có trong CSDL.
-5. **Nguyên nhân:** Hàm xử lý ở tầng Service không kiểm tra kết quả `None` trước khi trả về response nên gây ra exception unhandled.
-6. **Cách sửa:** Bổ sung khối kiểm tra `if not ticket: raise HTTPException(status_code=404, detail="Ticket not found")` tại route handler.
-7. **Commit và xác nhận:** https://github.com/vuhuy127/cdtn1-huynhvuhuy-l2/commit/4e8a1d2 — Chạy lại TC-07 trả về mã HTTP 404: PASS.
+1. **ID / Severity:** BUG-01 / MAJOR.
+2. **Detected by:** Repository code review and restart-persistence requirement.
+3. **Symptom:** Tickets were stored in the module-level `fake_db` dictionary and disappeared when the process restarted.
+4. **Reproduction:** Create a ticket, stop the API process, restart it, then request the ticket list.
+5. **Root cause:** No database connection or repository persistence layer was implemented.
+6. **Fix:** Added SQLite schema, connection management, repository methods, and a named Docker volume.
+7. **Commit / verification:** Resolved in the BT3 implementation commit; verified by TC-03, TC-04, TC-05 and TC-12. Commit: `PENDING_COMMIT_URL`.
 
----
+## BUG-02 — MAJOR — Invalid phone / IMEI / category / priority values were not validated
 
-## BUG-03 · Minor · Lỗi thiếu validate ký tự đặc biệt trong IMEI
-1. **Mã và mức độ:** BUG-03 · MINOR · Lỗi dữ liệu sai định dạng đầu vào.
-2. **Phát hiện bởi:** TC-10 (Kiểm thử định dạng chuỗi IMEI).
-3. **Triệu chứng:** Chuỗi IMEI chứa 15 ký tự chữ cái vẫn vượt qua bộ lọc validation.
-4. **Cách tái lập:** Nhập IMEI là `"ABCDEFGHIJKLMNO"` khi gọi tạo phiếu.
-5. **Nguyên nhân:** Pydantic regex schema chỉ kiểm tra độ dài `min_length=15, max_length=15` mà thiếu biểu thức chính quy kiểm tra chữ số `^\d{15}$`.
-6. **Cách sửa:** Cập nhật regex pattern cho trường IMEI thành `Field(..., regex=r"^\d{15}$")`.
-7. **Commit và xác nhận:** https://github.com/vuhuy127/cdtn1-huynhvuhuy-l2/commit/7c3f2b1 — Chạy lại TC-10 trả về mã 422: PASS.
+1. **ID / Severity:** BUG-02 / MAJOR.
+2. **Detected by:** Boundary and invalid-input review.
+3. **Symptom:** The API accepted arbitrary strings for phone, IMEI, issue category, and priority.
+4. **Reproduction:** POST a ticket with a 9-digit phone number, non-numeric IMEI, or unsupported priority.
+5. **Root cause:** The original Pydantic request model declared plain `str` fields without format or enum constraints.
+6. **Fix:** Added Pydantic v2 patterns, Literal enumerations, description constraints, and a safe validation error handler.
+7. **Commit / verification:** Resolved in the BT3 implementation commit; verified by TC-07 through TC-10. Commit: `PENDING_COMMIT_URL`.
+
+## BUG-03 — MAJOR — The original create-ticket test could pass when creation failed
+
+1. **ID / Severity:** BUG-03 / MAJOR.
+2. **Detected by:** Test-suite audit.
+3. **Symptom:** `test_create_ticket_success` accepted HTTP 422 as a successful outcome and sent field names not used by the API.
+4. **Reproduction:** Run the original test with its mismatched payload; a validation failure could still satisfy the assertion.
+5. **Root cause:** The test assertion allowed `[200, 201, 422]` and the payload contained obsolete keys.
+6. **Fix:** Replaced the weak test with a valid payload and an exact HTTP 201 assertion; expanded the suite to 12 independent cases.
+7. **Commit / verification:** Resolved in the BT3 implementation commit; verified by TC-03 and the full 12-case suite. Commit: `PENDING_COMMIT_URL`.

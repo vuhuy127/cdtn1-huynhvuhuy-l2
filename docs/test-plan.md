@@ -1,26 +1,34 @@
-# Test Plan - Phân hệ Mekong Mobile Smart CRM (L2)
+# TP1 — Test Plan
 
-## 1. Phạm vi kiểm thử (Scope)
-* **Chức năng kiểm thử:**
-  * Endpoint tiếp nhận phiếu bảo hành `POST /api/tickets/`.
-  * Endpoint tra cứu phiếu bảo hành `GET /api/tickets/{ticket_id}`.
-  * Validation định dạng số điện thoại (10 chữ số) và mã IMEI (15 chữ số).
-  * Quy tắc nghiệp vụ kiểm tra trạng thái phiếu trùng và phân loại danh mục lỗi.
-* **Chủ ý KHÔNG kiểm thử:**
-  * Giao diện người dùng (UI Frontend): Chưa phát triển ở giai đoạn này.
-  * Kiểm thử hiệu năng và chịu tải (Performance/Load testing): Thuộc phạm vi Chuyên đề tốt nghiệp 2.
+## 1. Scope
 
-## 2. Phân bổ loại test và Kỹ thuật chọn dữ liệu
-* **Tổng số test case:** 11 test case.
-* **Phân bổ tầng kiểm thử:** 7 Unit tests (FastAPI logic), 2 Integration tests (Service + DB/Fixtures), 2 API/End-to-End tests (TestClient).
-* **Kỹ thuật chọn dữ liệu:** Phân vùng tương đương (Equivalence Partitioning) và Giá trị biên (Boundary Value Analysis) cho độ dài SĐT (9, 10, 11 số) và IMEI (14, 15, 16 số).
-* **Đảm bảo đủ 5 loại test:** Luồng đúng (Happy path), Giá trị biên (Boundary), Dữ liệu sai (Invalid data), Bảo mật (Security A01), Tính tái lập (Reproducibility).
+Test the implemented L2 FastAPI prototype: root and health endpoints; ticket creation, listing, detail retrieval, and status update; input validation; parameterized SQLite persistence; and repeatable sample-data initialization.
 
-## 3. Tiêu chí thành công (Success Criteria)
-* 100% test case trong Test Report có kết quả thực tế và ảnh chụp minh chứng.
-* Bộ kiểm thử đạt PASS 100% bằng một lệnh chạy `pytest -q`.
-* Không còn bug mức độ Critical đang mở.
+Out of scope: frontend/UI, login and role-based authorization, production deployment, load testing, penetration testing, and encryption-at-rest verification. These are not implemented in this prototype.
 
-## 4. Môi trường và Dữ liệu thử
-* **Môi trường:** Python 3.11+, FastAPI TestClient, Pytest.
-* **Dữ liệu thử:** Sử dụng Pytest Fixtures (`conftest.py`) và tệp seed dữ liệu sạch để khởi tạo lại trạng thái trước mỗi lần chạy test.
+## 2. Test types and techniques
+
+The test set contains 12 cases across five required types:
+
+| Test type | Cases | Technique |
+|---|---|---|
+| Happy path | TC-01–TC-06 | Valid request / expected response |
+| Boundary | TC-07–TC-09 | Boundary Value Analysis for 10-digit phone and 15-digit IMEI |
+| Invalid data | TC-10 | Invalid enumeration value |
+| Security | TC-11 | SQL-like payload; verify parameterized query treats input as data |
+| Reproducibility | TC-12 | Execute seed repeatedly and compare row count |
+
+## 3. Entry, exit, and success criteria
+
+- Entry: Python 3.12+ and dependencies from `requirements.txt` are installed.
+- Execute: `python -m pytest -q`.
+- Exit: all 12 test cases pass; no Critical bug remains open in the implemented scope.
+- Every reported result must correspond to an executed test. Docker white-box testing is recorded separately and is not claimed until run on a Docker-capable clean machine.
+
+## 4. Environment and test data
+
+- Runtime: Python 3.13.5 in the current verification environment; CI is configured for Python 3.12 and 3.13.
+- Framework: FastAPI TestClient, HTTPX, Pytest.
+- Database: isolated temporary SQLite file per test.
+- Demo data: two synthetic tickets, inserted with `INSERT OR IGNORE`.
+- Personal data: only synthetic phone and IMEI values are used.
