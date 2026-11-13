@@ -20,15 +20,17 @@ The test set contains 12 cases across five required types:
 
 ## 3. Entry, exit, and success criteria
 
-- Entry: Python 3.12+ and dependencies from `requirements.txt` are installed.
-- Execute: `python -m pytest -q`.
-- Exit: all 12 test cases pass; no Critical bug remains open in the implemented scope.
-- Every reported result must correspond to an executed test. Docker white-box testing is recorded separately and is not claimed until run on a Docker-capable clean machine.
+- Entry: Python 3.12+ and dependencies from requirements.txt are installed.
+- Unit/API execution: python -m pytest -q.
+- Docker execution: docker compose up -d --build, followed by /health and API smoke checks.
+- Exit: all 12 test cases pass; Docker Compose health status is healthy; sample seeding is idempotent; and a created ticket persists after app restart.
+- Every reported result must correspond to an executed test. The GitHub-hosted Docker smoke test is supplementary to the student's local Windows clean-folder/tag verification.
 
 ## 4. Environment and test data
 
-- Runtime: Python 3.13.5 in the current verification environment; CI is configured for Python 3.12 and 3.13.
-- Framework: FastAPI TestClient, HTTPX, Pytest.
-- Database: isolated temporary SQLite file per test.
-- Demo data: two synthetic tickets, inserted with `INSERT OR IGNORE`.
+- Local test runtime: Python 3.13.5; FastAPI TestClient, HTTPX and Pytest.
+- CI matrix: Python 3.12 and 3.13.
+- Docker smoke environment: GitHub-hosted Ubuntu runner using Docker Compose.
+- Database: isolated temporary SQLite file per Pytest case; named Docker volume ticket_data for container execution.
+- Demo data: two synthetic tickets, inserted with INSERT OR IGNORE.
 - Personal data: only synthetic phone and IMEI values are used.

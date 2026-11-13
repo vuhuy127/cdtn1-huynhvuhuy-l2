@@ -72,6 +72,17 @@ To remove the container and all persisted demo data, run:
 docker compose down -v
 ~~~
 
+### HTTPS for an actual deployment
+
+HTTPS is not enabled by this local Docker Compose prototype. Before exposing a deployed instance to users:
+
+1. Configure a domain name and point its DNS record to the hosting environment.
+2. Terminate TLS at the hosting platform or at a reverse proxy such as Caddy or Nginx using a valid certificate.
+3. Redirect HTTP requests to HTTPS and verify the certificate chain and renewal process.
+4. Update API consumers to use the HTTPS URL.
+
+Do not treat the current HTTP localhost endpoint as a production deployment. Authentication and authorization must also be implemented before real customer data is processed.
+
 ## Clean-machine acceptance test
 
-For the BT3 white-box test, clone the submitted tag v1.0 into a new empty folder, follow only the two setup commands above, verify the healthy state, run the API smoke checks, and capture screenshots. Do not claim the clean-machine test passed until this procedure has actually been executed on a separate Docker-capable machine.
+The GitHub-hosted Docker smoke test for workflow run 43426101102 built the Compose image on a clean Ubuntu runner, verified Docker health status healthy, checked API endpoints, reseeded twice without duplicate rows, created a ticket and confirmed it remained available after restarting the app. The student must still perform the prescribed clone-by-tag test on a separate Windows machine and capture local screenshots for the PDF evidence before submission.
