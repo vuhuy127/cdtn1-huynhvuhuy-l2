@@ -1,19 +1,24 @@
-# Test Report - Báo cáo Kết quả Kiểm thử Buổi 14
+# TP2 — Test Report
 
-**Tổng số test case:** 11 | **PASS:** 11 | **FAIL:** 0
+**Execution command:** `python -m pytest -q`  
+**Execution environment:** Python 3.13.5, FastAPI 0.128.2, Pydantic 2.13.5, Pytest 9.0.2, HTTPX 0.28.1  
+**Result:** 12/12 PASS (100%) — executed locally in the assistant build workspace. GitHub Actions results for the new branch are pending until GitHub finishes the workflow.
 
-| Mã TC | Tiền điều kiện | Các bước thực hiện | Dữ liệu thử | Kết quả mong đợi | Ưu tiên | Kết quả thực tế | P/F |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC-01** | Hệ thống sẵn sàng | Call POST /api/tickets/ | SĐT: `0912345678`, IMEI: `123456789012345` | Mã HTTP 200/201, trả về mã phiếu mới | Cao | Mã HTTP 200, tạo thành công phiếu | **PASS** |
-| **TC-02** | Hệ thống sẵn sàng | Call POST /api/tickets/ | SĐT: `091234567` (9 số - dưới biên) | Mã HTTP 422, thông báo SĐT phải đúng 10 số | Cao | Mã HTTP 422, trả về lỗi validation SĐT | **PASS** |
-| **TC-03** | Hệ thống sẵn sàng | Call POST /api/tickets/ | SĐT: `09123456789` (11 số - trên biên) | Mã HTTP 422, thông báo SĐT phải đúng 10 số | Cao | Mã HTTP 422, trả về lỗi validation SĐT | **PASS** |
-| **TC-04** | Hệ thống sẵn sàng | Call POST /api/tickets/ | IMEI: `12345678901234` (14 số - dưới biên) | Mã HTTP 422, thông báo IMEI phải đúng 15 số | Cao | Mã HTTP 422, trả về lỗi validation IMEI | **PASS** |
-| **TC-05** | Hệ thống sẵn sàng | Call POST /api/tickets/ | IMEI: `1234567890123456` (16 số - trên biên) | Mã HTTP 422, thông báo IMEI phải đúng 15 số | Cao | Mã HTTP 422, trả về lỗi validation IMEI | **PASS** |
-| **TC-06** | Thẻ/Mã lỗi rỗng | Call POST /api/tickets/ | Thiếu trường `error_category` | Mã HTTP 422, ghi rõ tên trường bị thiếu | Trung bình | Mã HTTP 422, trả lỗi thiếu trường bắt buộc | **PASS** |
-| **TC-07** | Phiếu ID=9999 không tồn tại | Call GET /api/tickets/9999 | ID: `9999` | Mã HTTP 404 Not Found (không trả về 500) | Cao | Mã HTTP 404 với thông báo "Ticket not found" | **PASS** |
-| **TC-08** | Không có token / Sai quyền | Call PATCH /api/tickets/1 với token tài khoản khác | User Token A, Ticket thuộc User B | Mã HTTP 403 Forbidden (OWASP A01) | Cao | Mã HTTP 403, không sửa được dữ liệu | **PASS** |
-| **TC-09** | CSDL chưa khởi tạo | Chạy lại lệnh seed/migration lần 2 | Data seed mẫu | Migration thành công, không nhân đôi bản ghi | Cao | Đã chạy lại seed, dữ liệu giữ nguyên không bị trùng | **PASS** |
-| **TC-10** | Dữ liệu sai định dạng | Truyền chuỗi chữ vào IMEI | IMEI: `"ABCDEFGHIJKLMNO"` | Mã HTTP 422 Unprocessable Entity | Trung bình | Mã HTTP 422, báo lỗi định dạng IMEI | **PASS** |
-| **TC-11** | Chạy toàn bộ test | Gõ lệnh `pytest -q` | Tất cả test trong `tests/` | 11/11 tests PASS trong terminal | Cao | 11 passed in 0.42s | **PASS** |
+| TC ID | Test type | Preconditions | Steps | Test data | Expected result | Actual result | P/F |
+|---|---|---|---|---|---|---|---|
+| TC-01 | Happy path | App started | GET `/` | None | HTTP 200; welcome message | HTTP 200; message returned | PASS |
+| TC-02 | Happy path | SQLite initialized | GET `/health` | None | HTTP 200; DB connected | HTTP 200; DB connected | PASS |
+| TC-03 | Happy path | App started | POST valid ticket | Phone 10 digits; IMEI 15 digits; HIGH | HTTP 201; ticket ID and 24-hour SLA | HTTP 201; ID and due date returned | PASS |
+| TC-04 | Happy path | Demo seed exists | GET list with limit=1 | `limit=1&offset=0` | HTTP 200; one item and pagination metadata | HTTP 200; one item and total returned | PASS |
+| TC-05 | Happy path | Demo seed exists | GET detail | `TK-DEMO-001` | HTTP 200; matching ticket | HTTP 200; matching ticket | PASS |
+| TC-06 | Happy path | Demo seed exists | PATCH status | `HOÀN TẤT` | HTTP 200; status updated | HTTP 200; status updated | PASS |
+| TC-07 | Boundary | App started | POST with 9-digit phone | `090123456` | HTTP 422 | HTTP 422 | PASS |
+| TC-08 | Boundary | App started | POST with 11-digit phone | `09012345678` | HTTP 422 | HTTP 422 | PASS |
+| TC-09 | Boundary | App started | POST with 14-digit IMEI | `12345678901234` | HTTP 422 | HTTP 422 | PASS |
+| TC-10 | Invalid data | App started | POST unsupported priority | `ROOT` | HTTP 422; value not echoed | HTTP 422; value not echoed | PASS |
+| TC-11 | Security | SQLite initialized | POST SQL-like description; retrieve ticket | `'; DROP TABLE tickets; --` | Text stored literally; table remains available | HTTP 201; text retrieved; list still works | PASS |
+| TC-12 | Reproducibility | Demo seed initialized | Run seed twice | Same two demo IDs | Row count unchanged | Count remains 2 | PASS |
 
-*Ảnh chụp màn hình minh chứng được lưu trữ tại thư mục `docs/screenshots/` (từ `TC-01.png` đến `TC-11.png`).*
+## Evidence limitation
+
+The 12 API/persistence tests above were executed in the local build workspace and passed. Docker is not installed in that environment, so the following required workshop evidence has **not** been captured or claimed: `docker compose ps` showing `healthy`, a clean-machine clone by tag `v1.0`, and the second Docker startup/volume check. Add genuine screenshots from a Docker-capable machine to `docs/screenshots/` before final submission.
